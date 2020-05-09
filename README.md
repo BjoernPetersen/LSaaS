@@ -1,0 +1,69 @@
+# Local network security as a service (LSaaS)
+
+This service allows you to obtain a publicly trusted TLS certificate for your
+[MusicBot](https://github.com/BjoernPetersen/MusicBot) instance in the local network.
+
+It works by creating a subdomain pointing to the local IP you supplied, solving a DNS-01 challenge
+and giving you the certificate signed by Let's Encrypt.
+
+## Requesting an instance certificate
+
+Send a request containing your IP address to the service:
+
+```json
+POST https://instance.kiu.party
+
+{
+    "ip": "192.168.178.42"
+}
+```
+
+The IP address must be a private/local address, publicly available IP addresses will be rejected.
+
+You'll get a response containing your new subdomain and a token to retrieve your certificate:
+
+```json
+{
+    "domain": "some-random-subdomain.instance.kiu.party",
+    "token": "your-super-secret-token"
+}
+```
+
+## Retrieving your certificate
+
+Solving the ACME-Challenge to get a certificate from Let's Encrypt might take a few minutes.
+You'll have to check whether the certificate is ready yet until the process is done. The recommended
+checking interval is 10 seconds.
+
+Your request body should contain the token from the previous step:
+
+```json
+GET https://instance.kiu.party
+
+{
+    "token": "your-super-secret-token"
+}
+```
+
+While the certificate is still being requested, the response will be:
+
+```json
+{
+    "hasCertificate": false
+}
+```
+
+When the process is done, you'll get a response containing the certificate for your subdomain.
+You'll **only get a successful response once**, afterwards the certificate and private key are
+deleted from the server and you are the only one who has it.
+Keep your private key secret as it allows any holder of it to impersonate you.
+
+```json
+{
+    "hasCertificate": true,
+    "certificate": {
+        "crt": "Base64-encoded-certificate",
+        "key": "Base64-encoded-private-key"
+    }
+}
+```
