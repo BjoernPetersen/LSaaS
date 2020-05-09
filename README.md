@@ -1,9 +1,9 @@
 # Local network security as a service (LSaaS)
 
-This service allows you to obtain a publicly trusted TLS certificate for your
+This free service allows you to obtain a publicly trusted TLS certificate for your
 [MusicBot](https://github.com/BjoernPetersen/MusicBot) instance in the local network.
 
-It works by creating a subdomain pointing to the local IP you supplied, solving a DNS-01 challenge
+It works by creating a subdomain pointing to the local IP you supplied, solving a `DNS-01` challenge
 and giving you the certificate signed by Let's Encrypt.
 
 ## Requesting an instance certificate
@@ -67,3 +67,9 @@ Keep your private key secret as it allows any holder of it to impersonate you.
     }
 }
 ```
+
+## Certificate expiration
+
+The certificate you'll receive is valid for 90 days and cannot be renewed. When your certificate
+expires, your subdomain DNS record will be deleted and you'll have to request a new domain and
+certificate.
