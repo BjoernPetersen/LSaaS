@@ -68,6 +68,8 @@ def process_request(event, context):
     key_format = event['keyFormat']
     folder = f'{token}/{key_format}'
     crt, key = _get_cert(domain_name)
+    crt = crt.encode(encoding='ascii')
+    key = key.encode(encoding='ascii')
     if key_format == 'pem':
         # We're done here
         _store_object(crt, folder, 'crt')
@@ -75,6 +77,7 @@ def process_request(event, context):
     else:
         # We need the p12 format as an intermediate format for JKS too
         payload = {
+            'pass': token,
             'crt': _encode_string(crt),
             'key': _encode_string(key),
         }
@@ -82,14 +85,16 @@ def process_request(event, context):
         data = _read_lambda_response(response)
         p12 = data['result']
         if key_format == 'p12':
-            _store_object(p12, folder, 'p12')
+            _store_object(_decode_string(p12), folder, 'p12')
         elif key_format == 'jks':
             payload = {
+                'pass': token,
                 'p12': p12,
             }
             response = _invoke_lambda('LSaaS-ConvertJKS', payload, sync=True)
             data = _read_lambda_response(response)
-            _store_object(data['result'], folder, 'jks')
+            jks = data['result']
+            _store_object(_decode_string(jks), folder, 'jks')
         else:
             raise ValueError(f'Unexpected key format: {key_format}')
 
@@ -100,18 +105,17 @@ def _read_lambda_response(response) -> dict:
     return json.loads(raw)
 
 
-def _store_object(content: str, folder, name):
+def _store_object(content: bytes, folder, name):
     key = f'{folder}/{name}'
-    encoded = content.encode(encoding='ascii')
     md5 = hashlib.md5()
-    md5.update(encoded)
+    md5.update(content)
     hashed = b64encode(md5.digest()).decode('ascii')
     s3 = boto3.resource('s3')
     bucket = s3.Bucket('lsaas')
     bucket.put_object(
         Key=key,
         ContentMD5=hashed,
-        Body=encoded
+        Body=content
     )
 
 
@@ -165,7 +169,7 @@ def get_result(event, context):
         file_name = _get_file_name(key)
         path = f'/tmp/{token}.{file_name}'
         bucket.download_file(key, path)
-        with open(path, 'r') as file:
+        with open(path, 'rb') as file:
             content = file.read()
         encoded = _encode_string(content)
         result_data[file_name] = encoded
@@ -182,8 +186,12 @@ def get_result(event, context):
     }
 
 
-def _encode_string(s: str) -> str:
-    return b64encode(s.encode('ascii')).decode('ascii')
+def _encode_string(s: bytes) -> str:
+    return b64encode(s).decode('ascii')
+
+
+def _decode_string(s: str) -> bytes:
+    return b64decode(s.encode('ascii'))
 
 
 def _is_valid_ip(ip: str) -> bool:
