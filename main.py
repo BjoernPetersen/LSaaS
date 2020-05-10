@@ -21,7 +21,7 @@ def post_request(event, context):
     instance_id = context.aws_request_id
     ip = event['ip']
     if not _is_valid_ip(ip):
-        raise ValueError()
+        raise ValueError('Invalid IP supplied.')
     domain_name = cloudflare.register_domain(instance_id, ip)
 
     token = secrets.token_hex(64)
@@ -54,12 +54,12 @@ def _store_object(content: str, folder, name):
     encoded = content.encode(encoding='ascii')
     md5 = hashlib.md5()
     md5.update(encoded)
-    hash = b64encode(md5.digest()).decode('ascii')
+    hashed = b64encode(md5.digest()).decode('ascii')
     s3 = boto3.resource('s3')
     bucket = s3.Bucket('lsaas')
     bucket.put_object(
         Key=key,
-        ContentMD5=hash,
+        ContentMD5=hashed,
         Body=encoded
     )
 
@@ -111,8 +111,10 @@ def _encode_string(s: str) -> str:
 
 
 def _is_valid_ip(ip: str) -> bool:
-    # TODO handle invalid IP error
-    address: IPv4Address = ip_address(ip)
+    try:
+        address: IPv4Address = ip_address(ip)
+    except ValueError:
+        return False
     return address.is_private and not address.is_reserved
 
 
