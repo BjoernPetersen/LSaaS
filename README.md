@@ -62,7 +62,7 @@ deleted from the server and you are the only one who has it.
 Keep your private key secret as it allows any holder of it to impersonate you.
 
 Depending on the requested key format, exactly one of the keys `pem`, `p12` or `jks` will
-be present.
+be present. For `p12` and `jks` keys, your token will be the keystore passphrase.
 
 ```json
 {
