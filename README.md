@@ -8,13 +8,15 @@ and giving you the certificate signed by Let's Encrypt.
 
 ## Requesting an instance certificate
 
-Send a request containing your IP address to the service:
+Send a request containing your IP address to the service and the desired key format:
 
 ```json
 POST https://instance.kiu.party
 
 {
-    "ip": "192.168.178.42"
+    "ip": "192.168.178.42",
+    // Can be "pem", "p12" or "jks". Defaults to "pem" if missing.
+    "keyFormat": "pem"
 }
 ```
 
@@ -25,7 +27,8 @@ You'll get a response containing your new subdomain and a token to retrieve your
 ```json
 {
     "domain": "some-random-subdomain.instance.kiu.party",
-    "token": "your-super-secret-token"
+    "token": "your-super-secret-token",
+    "keyFormat": "pem"
 }
 ```
 
@@ -58,12 +61,21 @@ You'll **only get a successful response once**, afterwards the certificate and p
 deleted from the server and you are the only one who has it.
 Keep your private key secret as it allows any holder of it to impersonate you.
 
+Depending on the requested key format, exactly one of the keys `pem`, `p12` or `jks` will
+be present.
+
 ```json
 {
     "hasCertificate": true,
-    "certificate": {
+    "pem": {
         "crt": "Base64-encoded-certificate",
         "key": "Base64-encoded-private-key"
+    },
+    "p12": {
+        "p12": "Base64-encoded-p12-file"
+    },
+    "jks": {
+        "jks": "Base64-encoded-jks-file"
     }
 }
 ```

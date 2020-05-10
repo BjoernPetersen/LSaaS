@@ -4,11 +4,14 @@ import os
 import secrets
 from base64 import b64decode, b64encode
 from ipaddress import ip_address, IPv4Address
+from typing import Optional
 
 import boto3
 import sewer
 
 import cloudflare
+
+allowed_key_formats = ['pem', 'p12', 'jks']
 
 
 def cleanup(event, context):
@@ -17,36 +20,84 @@ def cleanup(event, context):
         cloudflare.unregister_domain(outdated_id)
 
 
+def _get_format(event):
+    try:
+        result = event['keyFormat']
+        if result in allowed_key_formats:
+            return result
+        else:
+            raise ValueError(f'Invalid key format. Allowed values: {allowed_key_formats}')
+    except KeyError:
+        return 'pem'
+
+
 def post_request(event, context):
     instance_id = context.aws_request_id
     ip = event['ip']
     if not _is_valid_ip(ip):
         raise ValueError('Invalid IP supplied.')
-    domain_name = cloudflare.register_domain(instance_id, ip)
 
+    key_format = _get_format(event)
     token = secrets.token_hex(64)
+
+    domain_name = cloudflare.register_domain(instance_id, ip)
 
     result = {
         'domain': domain_name,
+        'keyFormat': key_format,
         'token': token
     }
 
-    lamb = boto3.client('lambda')
-    lamb.invoke(
-        FunctionName='LSaaS-GetCert',
-        InvocationType='Event',
-        Payload=json.dumps(result)
-    )
+    _invoke_lambda('LSaaS-GetCert', result)
 
     return result
+
+
+def _invoke_lambda(name, payload, sync=False):
+    lamb = boto3.client('lambda')
+    return lamb.invoke(
+        FunctionName=name,
+        InvocationType='RequestResponse' if sync else 'Event',
+        Payload=json.dumps(payload)
+    )
 
 
 def process_request(event, context):
     domain_name = event['domain']
     token = event['token']
+    key_format = event['keyFormat']
+    folder = f'{token}/{key_format}'
     crt, key = _get_cert(domain_name)
-    _store_object(crt, token, 'crt')
-    _store_object(key, token, 'key')
+    if key_format == 'pem':
+        # We're done here
+        _store_object(crt, folder, 'crt')
+        _store_object(key, folder, 'key')
+    else:
+        # We need the p12 format as an intermediate format for JKS too
+        payload = {
+            'crt': _encode_string(crt),
+            'key': _encode_string(key),
+        }
+        response = _invoke_lambda('LSaaS-ConvertP12', payload, sync=True)
+        data = _read_lambda_response(response)
+        p12 = data['result']
+        if key_format == 'p12':
+            _store_object(p12, folder, 'p12')
+        elif key_format == 'jks':
+            payload = {
+                'p12': p12,
+            }
+            response = _invoke_lambda('LSaaS-ConvertJKS', payload, sync=True)
+            data = _read_lambda_response(response)
+            _store_object(data['result'], folder, 'jks')
+        else:
+            raise ValueError(f'Unexpected key format: {key_format}')
+
+
+def _read_lambda_response(response) -> dict:
+    raw_bytes: bytes = response['Payload'].read()
+    raw = raw_bytes.decode('utf-8')
+    return json.loads(raw)
 
 
 def _store_object(content: str, folder, name):
@@ -64,45 +115,70 @@ def _store_object(content: str, folder, name):
     )
 
 
+def _list_objects(token) -> list:
+    s3 = boto3.client('s3')
+    response = s3.list_objects_v2(
+        Bucket='lsaas',
+        Prefix=token
+    )
+    try:
+        contents = response['Contents']
+    except KeyError:
+        return []
+    result = []
+    for obj in contents:
+        result.append(obj['Key'])
+    return result
+
+
+def _extract_key_format(object_keys: list) -> Optional[str]:
+    if not object_keys:
+        return None
+    else:
+        first: str = object_keys[0]
+        key_format = first.split('/')[1]
+        if key_format == 'pem' and len(object_keys) != 2:
+            return None
+        else:
+            return key_format
+
+
+def _get_file_name(object_key: str) -> str:
+    return object_key.split('/')[-1]
+
+
 def get_result(event, context):
     token = event['token']
 
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket('lsaas')
-
-    cert_key = f'{token}/crt'
-    key_key = f'{token}/key'
-    cert_file = f'/tmp/{token}.crt'
-    key_file = f'/tmp/{token}.key'
-    try:
-        bucket.download_file(cert_key, cert_file)
-        bucket.download_file(key_key, key_file)
-    except:
+    object_keys = _list_objects(token)
+    key_format = _extract_key_format(object_keys)
+    if not key_format:
         return {
             'hasCertificate': False
         }
 
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket('lsaas')
+
+    result_data = dict()
+    for key in object_keys:
+        file_name = _get_file_name(key)
+        path = f'/tmp/{token}.{file_name}'
+        bucket.download_file(key, path)
+        with open(path, 'r') as file:
+            content = file.read()
+        encoded = _encode_string(content)
+        result_data[file_name] = encoded
+
     bucket.delete_objects(
         Delete={
-            'Objects': [
-                {'Key': cert_key},
-                {'Key': key_key}
-            ],
+            'Objects': [{'Key': key} for key in object_keys],
         },
     )
 
-    with open(cert_file, 'r') as file:
-        crt = file.read()
-
-    with open(key_file, 'r') as file:
-        key = file.read()
-
     return {
         'hasCertificate': True,
-        'certificate': {
-            'crt': _encode_string(crt),
-            'key': _encode_string(key)
-        }
+        key_format: result_data
     }
 
 
