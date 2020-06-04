@@ -10,7 +10,7 @@ and giving you the certificate signed by Let's Encrypt.
 
 Send a request containing your IP address to the service and the desired key format:
 
-```json
+```
 POST https://instance.kiu.party
 
 {
