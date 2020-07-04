@@ -17,3 +17,7 @@ variable "lambda_role_prefix" {
 variable "lambda_layer_name" {
     default = "lsaas2"
 }
+
+variable "api_gateway_name" {
+   default = "lsaas2"
+}
