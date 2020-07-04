@@ -14,6 +14,11 @@ import cloudflare
 allowed_key_formats = ['pem', 'p12', 'jks']
 
 
+_lambda_name_retrieve = os.getenv("LAMBDA_NAME_RETRIEVE")
+_lambda_name_convert_p12 = os.getenv("LAMBDA_NAME_CONVERT_P12")
+_lambda_name_convert_jks = os.getenv("LAMBDA_NAME_CONVERT_JKS")
+_bucket_name = os.getenv("S3_BUCKET_NAME")
+
 def cleanup(event, context):
     outdated_ids = cloudflare.get_outdated_entries()
     for outdated_id in outdated_ids:
@@ -48,7 +53,7 @@ def post_request(event, context):
         'token': token
     }
 
-    _invoke_lambda('LSaaS-GetCert', result)
+    _invoke_lambda(_lambda_name_retrieve, result)
 
     return result
 
@@ -81,7 +86,7 @@ def process_request(event, context):
             'crt': _encode_string(crt),
             'key': _encode_string(key),
         }
-        response = _invoke_lambda('LSaaS-ConvertP12', payload, sync=True)
+        response = _invoke_lambda(_lambda_name_convert_p12, payload, sync=True)
         data = _read_lambda_response(response)
         p12 = data['result']
         if key_format == 'p12':
@@ -91,7 +96,7 @@ def process_request(event, context):
                 'pass': token,
                 'p12': p12,
             }
-            response = _invoke_lambda('LSaaS-ConvertJKS', payload, sync=True)
+            response = _invoke_lambda(_lambda_name_convert_jks, payload, sync=True)
             data = _read_lambda_response(response)
             jks = data['result']
             _store_object(_decode_string(jks), folder, 'jks')
@@ -111,7 +116,7 @@ def _store_object(content: bytes, folder, name):
     md5.update(content)
     hashed = b64encode(md5.digest()).decode('ascii')
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket('lsaas')
+    bucket = s3.Bucket(_bucket_name)
     bucket.put_object(
         Key=key,
         ContentMD5=hashed,
@@ -122,7 +127,7 @@ def _store_object(content: bytes, folder, name):
 def _list_objects(token) -> list:
     s3 = boto3.client('s3')
     response = s3.list_objects_v2(
-        Bucket='lsaas',
+        Bucket=_bucket_name,
         Prefix=token
     )
     try:
@@ -162,7 +167,7 @@ def get_result(event, context):
         }
 
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket('lsaas')
+    bucket = s3.Bucket(_bucket_name)
 
     result_data = dict()
     for key in object_keys:

@@ -14,6 +14,7 @@ resource "aws_lambda_function" "cleanup" {
     variables = {
       CLOUDFLARE_TOKEN = var.cloudflare_token_lambda
       CLOUDFLARE_ZONE_ID = var.cloudflare_zone_id
+      CLOUDFLARE_ZONE_NAME = var.cloudflare_zone_name
     }
   }
 }

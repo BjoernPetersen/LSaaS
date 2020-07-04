@@ -67,6 +67,9 @@ resource "aws_lambda_function" "retrieve_cert" {
     variables = {
       CLOUDFLARE_TOKEN = var.cloudflare_token_lambda
       LE_ACCOUNT_KEY = var.le_account_key
+      LAMBDA_NAME_CONVERT_P12 = aws_lambda_function.convert_p12.function_name
+      LAMBDA_NAME_CONVERT_JKS = aws_lambda_function.convert_jks.function_name
+      S3_BUCKET_NAME = aws_s3_bucket.bucket.id
     }
   }
 }
