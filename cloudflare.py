@@ -10,9 +10,11 @@ token = os.getenv('CLOUDFLARE_TOKEN')
 _client = CloudFlare(token=token)
 
 _zone_name = os.getenv("CLOUDFLARE_ZONE_NAME")
+infix = os.getenv("CLOUDFLARE_INFIX")
+
 
 def register_domain(instance_id: str, ip: str) -> str:
-    name = f'{instance_id}.instance'
+    name = f'{instance_id}.{infix}'
     _client.zones.dns_records.post(_zone_id, data={
         'name': name,
         'type': 'A',
@@ -27,7 +29,7 @@ def unregister_domain(record_id):
 
 def _is_outdated(record: dict) -> bool:
     name: str = record['name']
-    if not name.endswith(f'.instance.{_zone_name}'):
+    if not name.endswith(f'.{infix}.{_zone_name}'):
         return False
     iso_creation_time = record['created_on'][:-1]
     created_on = datetime.datetime.fromisoformat(iso_creation_time)

@@ -15,6 +15,7 @@ resource "aws_lambda_function" "post" {
       CLOUDFLARE_TOKEN = var.cloudflare_token_lambda
       CLOUDFLARE_ZONE_ID = var.cloudflare_zone_id
       CLOUDFLARE_ZONE_NAME = var.cloudflare_zone_name
+      CLOUDFLARE_INFIX = var.cloudflare_infix
       LAMBDA_NAME_RETRIEVE = aws_lambda_function.retrieve_cert.function_name
     }
   }

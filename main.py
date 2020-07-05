@@ -19,6 +19,7 @@ _lambda_name_convert_p12 = os.getenv("LAMBDA_NAME_CONVERT_P12")
 _lambda_name_convert_jks = os.getenv("LAMBDA_NAME_CONVERT_JKS")
 _bucket_name = os.getenv("S3_BUCKET_NAME")
 
+
 def cleanup(event, context):
     outdated_ids = cloudflare.get_outdated_entries()
     for outdated_id in outdated_ids:
