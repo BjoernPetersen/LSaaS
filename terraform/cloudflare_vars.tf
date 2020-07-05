@@ -10,5 +10,5 @@ variable "cloudflare_token_lambda" {
 }
 
 variable "cloudflare_infix" {
-    default = "local"
+    default = "instance"
 }
