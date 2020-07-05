@@ -46,7 +46,7 @@ resource "aws_apigatewayv2_api" "api" {
 }
 
 resource "aws_acm_certificate" "cert" {
-  domain_name = "instance.${var.cloudflare_zone_name}"
+  domain_name = "${var.cloudflare_infix}.${var.cloudflare_zone_name}"
   validation_method = "DNS"
 }
 
@@ -63,7 +63,7 @@ resource "aws_acm_certificate_validation" "cert_validation" {
 }
 
 resource "aws_apigatewayv2_domain_name" "domain_name" {
-  domain_name = "instance.${var.cloudflare_zone_name}"
+  domain_name = "${var.cloudflare_infix}.${var.cloudflare_zone_name}"
 
   domain_name_configuration {
     certificate_arn = aws_acm_certificate_validation.cert_validation.certificate_arn
@@ -90,18 +90,18 @@ resource "aws_apigatewayv2_api_mapping" "api_domain" {
   stage = aws_apigatewayv2_stage.prod.id
 }
 
-resource "aws_apigatewayv2_integration" "post" {
-  api_id = aws_apigatewayv2_api.api.id
-  integration_type = "AWS"
-  content_handling_strategy = "CONVERT_TO_TEXT"
-  integration_method = "POST"
-  integration_uri = aws_lambda_function.post.invoke_arn
-}
+# resource "aws_apigatewayv2_integration" "post" {
+#   api_id = aws_apigatewayv2_api.api.id
+#   integration_type = "AWS"
+#   content_handling_strategy = "CONVERT_TO_TEXT"
+#   integration_method = "POST"
+#   integration_uri = aws_lambda_function.post.invoke_arn
+# }
 
-resource "aws_apigatewayv2_integration" "get" {
-  api_id = aws_apigatewayv2_api.api.id
-  integration_type = "AWS"
-  content_handling_strategy = "CONVERT_TO_TEXT"
-  integration_method = "GET"
-  integration_uri = aws_lambda_function.get_result.invoke_arn
-}
+# resource "aws_apigatewayv2_integration" "get" {
+#   api_id = aws_apigatewayv2_api.api.id
+#   integration_type = "AWS"
+#   content_handling_strategy = "CONVERT_TO_TEXT"
+#   integration_method = "GET"
+#   integration_uri = aws_lambda_function.get_result.invoke_arn
+# }
