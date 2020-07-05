@@ -33,6 +33,23 @@ resource "aws_iam_role" "lambda_role" {
   assume_role_policy = data.aws_iam_policy_document.assume_lambda_role_policy.json
 }
 
+data "aws_iam_policy_document" "lambda_logging" {
+  statement {
+    actions = [ "logs:CreateLogStream", "logs:PutLogEvents", "logs:CreateLogGroup" ]
+    resources = [ "arn:aws:logs:*:*:*" ]
+  }
+}
+
+resource "aws_iam_policy" "lambda_logging" {
+  name   = "lambda_logging"
+  policy = data.aws_iam_policy_document.lambda_logging.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_logging.arn
+}
+
 resource "aws_s3_bucket" "bucket" {
   bucket = var.s3_bucket_name
   acl = "private"
