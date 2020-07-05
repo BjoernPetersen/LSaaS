@@ -7,12 +7,12 @@ from ipaddress import ip_address, IPv4Address
 from typing import Optional
 
 import boto3
-import sewer
+from sewer.client import Client as SewerClient
+from sewer.dns_providers import CloudFlareDns
 
 import cloudflare
 
 allowed_key_formats = ['pem', 'p12', 'jks']
-
 
 _lambda_name_retrieve = os.getenv("LAMBDA_NAME_RETRIEVE")
 _lambda_name_convert_p12 = os.getenv("LAMBDA_NAME_CONVERT_P12")
@@ -209,9 +209,9 @@ def _is_valid_ip(ip: str) -> bool:
 
 
 def _get_cert(domain_name: str):
-    dns = sewer.CloudFlareDns(CLOUDFLARE_TOKEN=cloudflare.token)
+    dns = CloudFlareDns(CLOUDFLARE_TOKEN=cloudflare.token)
 
-    client = sewer.Client(domain_name=domain_name, dns_class=dns, account_key=_get_account_key())
+    client = SewerClient(domain_name=domain_name, dns_class=dns, account_key=_get_account_key())
     certificate = client.cert()
     key = client.certificate_key
 
