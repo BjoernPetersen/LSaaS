@@ -40,9 +40,12 @@ resource "aws_lambda_function" "get_result" {
   }
 }
 
-resource "aws_apigatewayv2_api" "api" {
+resource "aws_api_gateway_rest_api" "api" {
   name = var.api_gateway_name
-  protocol_type = "HTTP"
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
 }
 
 resource "aws_acm_certificate" "cert" {
@@ -55,6 +58,10 @@ resource "cloudflare_record" "cert_validation_record" {
   name = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
   type = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
   value = aws_acm_certificate.cert.domain_validation_options.0.resource_record_value
+
+  lifecycle {
+    ignore_changes = [ value ]
+  }
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
@@ -62,32 +69,72 @@ resource "aws_acm_certificate_validation" "cert_validation" {
   validation_record_fqdns = [ cloudflare_record.cert_validation_record.hostname ]
 }
 
-resource "aws_apigatewayv2_domain_name" "domain_name" {
+resource "aws_api_gateway_domain_name" "domain_name" {
   domain_name = "${var.cloudflare_infix}.${var.cloudflare_zone_name}"
-
-  domain_name_configuration {
-    certificate_arn = aws_acm_certificate_validation.cert_validation.certificate_arn
-    endpoint_type = "REGIONAL"
-    security_policy = "TLS_1_2"
+  regional_certificate_arn = aws_acm_certificate_validation.cert_validation.certificate_arn
+  security_policy = "TLS_1_2"
+  endpoint_configuration {
+    types = ["REGIONAL"]
   }
 }
 
 resource "cloudflare_record" "cert_record" {
   zone_id = var.cloudflare_zone_id
-  name = aws_apigatewayv2_domain_name.domain_name.domain_name
+  name = aws_api_gateway_domain_name.domain_name.domain_name
   type = "CNAME"
-  value = aws_apigatewayv2_domain_name.domain_name.domain_name_configuration.0.target_domain_name
+  value = aws_api_gateway_domain_name.domain_name.regional_domain_name
 }
 
-resource "aws_apigatewayv2_stage" "prod" {
-  api_id = aws_apigatewayv2_api.api.id
-  name = "prod"
+resource "aws_api_gateway_request_validator" "validate_body" {
+  name                        = "validate_body"
+  rest_api_id                 = aws_api_gateway_rest_api.api.id
+  validate_request_body       = true
 }
 
-resource "aws_apigatewayv2_api_mapping" "api_domain" {
-  api_id = aws_apigatewayv2_api.api.id
-  domain_name = aws_apigatewayv2_domain_name.domain_name.id
-  stage = aws_apigatewayv2_stage.prod.id
+resource "aws_api_gateway_method" "get" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_rest_api.api.root_resource_id
+  http_method = "GET"
+  authorization = "NONE"
+  request_validator_id = aws_api_gateway_request_validator.validate_body.id
+
+  request_models = {
+    "application/json" = aws_api_gateway_model.result_request.name
+  }
+}
+
+resource "aws_api_gateway_integration" "get" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_rest_api.api.root_resource_id
+  http_method = aws_api_gateway_method.get.http_method
+  integration_http_method = "POST"
+  type = "AWS"
+  uri = aws_lambda_function.get_result.invoke_arn
+}
+
+resource "aws_api_gateway_deployment" "deployment" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name = "prod"
+
+  triggers = {
+    redeployment = sha1(join(",", list(
+      jsonencode(aws_api_gateway_integration.get),
+    )))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.get
+  ]
+}
+
+resource "aws_api_gateway_base_path_mapping" "api_domain" {
+  api_id = aws_api_gateway_rest_api.api.id
+  domain_name = aws_api_gateway_domain_name.domain_name.domain_name
+  stage_name = aws_api_gateway_deployment.deployment.stage_name
 }
 
 # resource "aws_apigatewayv2_integration" "post" {
@@ -96,12 +143,4 @@ resource "aws_apigatewayv2_api_mapping" "api_domain" {
 #   content_handling_strategy = "CONVERT_TO_TEXT"
 #   integration_method = "POST"
 #   integration_uri = aws_lambda_function.post.invoke_arn
-# }
-
-# resource "aws_apigatewayv2_integration" "get" {
-#   api_id = aws_apigatewayv2_api.api.id
-#   integration_type = "AWS"
-#   content_handling_strategy = "CONVERT_TO_TEXT"
-#   integration_method = "GET"
-#   integration_uri = aws_lambda_function.get_result.invoke_arn
 # }
