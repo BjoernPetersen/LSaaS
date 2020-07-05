@@ -245,6 +245,19 @@ resource "aws_api_gateway_deployment" "deployment" {
   ]
 }
 
+resource "aws_api_gateway_usage_plan" "throttle" {
+  name = "throttling"
+  api_stages {
+    api_id = aws_api_gateway_rest_api.api.id
+    stage = aws_api_gateway_deployment.deployment.stage_name
+  }
+
+  throttle_settings {
+    burst_limit = 1
+    rate_limit = 1
+  }
+}
+
 resource "aws_api_gateway_base_path_mapping" "api_domain" {
   api_id = aws_api_gateway_rest_api.api.id
   domain_name = aws_api_gateway_domain_name.domain_name.domain_name
