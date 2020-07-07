@@ -54,11 +54,7 @@ checking interval is 10 seconds.
 Your request body should contain the token from the previous step:
 
 ```json
-GET https://instance.kiu.party
-
-{
-    "token": "your-super-secret-token"
-}
+GET https://instance.kiu.party/your-super-secret-token
 ```
 
 While the certificate is still being requested, the response will be:
@@ -96,5 +92,5 @@ be present. For `p12` and `jks` keys, your token will be the keystore passphrase
 ## Certificate expiration
 
 The certificate you'll receive is valid for 90 days and cannot be renewed. When your certificate
-expires, your subdomain DNS record will be deleted and you'll have to request a new domain and
+expires, your subdomain DNS records will be deleted and you'll have to request a new domain and
 certificate.
