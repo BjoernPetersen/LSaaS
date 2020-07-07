@@ -4,7 +4,7 @@ import os
 import secrets
 from base64 import b64decode, b64encode
 from ipaddress import ip_address, IPv4Address
-from typing import Optional
+from typing import Optional, List
 
 import boto3
 from sewer.client import Client as SewerClient
@@ -39,17 +39,26 @@ def _get_format(event):
 
 def post_request(event, context):
     instance_id = context.aws_request_id
-    ip = event['ip']
-    if not _is_valid_ip(ip):
-        raise ValueError('Invalid IP supplied.')
+    ips = event['ips']
+    unique_ips = set()
+    for ip in ips:
+        if not _is_valid_ip(ip):
+            raise ValueError(f'Invalid IP supplied: {ip}')
+        unique_ips.add(ip.strip())
+
+    domain_names = []
+    for unique_ip in unique_ips:
+        print(f'Registering: {unique_ip}')
+        domain_name = cloudflare.register_domain(instance_id, unique_ip)
+        domain_names.append(domain_name)
 
     key_format = _get_format(event)
     token = secrets.token_hex(64)
-
-    domain_name = cloudflare.register_domain(instance_id, ip)
+    wildcard_domain = cloudflare.get_wildcard_domain(instance_id)
 
     result = {
-        'domain': domain_name,
+        'wildcardDomain': wildcard_domain,
+        'domains': domain_names,
         'keyFormat': key_format,
         'token': token
     }
@@ -69,11 +78,11 @@ def _invoke_lambda(name, payload, sync=False):
 
 
 def process_request(event, context):
-    domain_name = event['domain']
+    wildcard_domain = event['wildcardDomain']
     token = event['token']
     key_format = event['keyFormat']
     folder = f'{token}/{key_format}'
-    crt, key = _get_cert(domain_name)
+    crt, key = _get_cert(wildcard_domain)
     crt = crt.encode(encoding='ascii')
     key = key.encode(encoding='ascii')
     if key_format == 'pem':

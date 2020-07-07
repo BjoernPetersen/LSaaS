@@ -13,8 +13,16 @@ _zone_name = os.getenv("CLOUDFLARE_ZONE_NAME")
 infix = os.getenv("CLOUDFLARE_INFIX")
 
 
+def _get_domain_space(instance_id: str) -> str:
+    return f'{instance_id}.{infix}'
+
+
+def get_wildcard_domain(instance_id: str) -> str:
+    return f'*.{_get_domain_space(instance_id)}.{_zone_name}'
+
+
 def register_domain(instance_id: str, ip: str) -> str:
-    name = f'{instance_id}.{infix}'
+    name = f'{ip}.{_get_domain_space(instance_id)}'
     _client.zones.dns_records.post(_zone_id, data={
         'name': name,
         'type': 'A',
@@ -41,4 +49,3 @@ def _is_outdated(record: dict) -> bool:
 def get_outdated_entries() -> List[str]:
     records = _client.zones.dns_records.get(_zone_id)
     return list(map(lambda it: it['id'], filter(_is_outdated, records)))
-
