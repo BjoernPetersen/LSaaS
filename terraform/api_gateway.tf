@@ -56,7 +56,6 @@ resource "aws_api_gateway_deployment" "deployment" {
   triggers = {
     redeployment = sha1(join(",", list(
       jsonencode(aws_api_gateway_integration.get),
-      jsonencode(aws_api_gateway_integration.get_old),
       jsonencode(aws_api_gateway_integration.post)
     )))
   }
@@ -67,7 +66,6 @@ resource "aws_api_gateway_deployment" "deployment" {
 
   depends_on = [
     aws_api_gateway_integration.get,
-    aws_api_gateway_integration.get_old,
     aws_api_gateway_integration.post
   ]
 }
