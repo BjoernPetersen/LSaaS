@@ -16,7 +16,7 @@ POST https://instance.kiu.party
 {
     "ips": [
         "192.168.178.42",
-        "10.0.0.2",
+        "10.0.0.2"
     ],
     // Can be "pem", "p12" or "jks". Defaults to "pem" if missing.
     "keyFormat": "pem"
