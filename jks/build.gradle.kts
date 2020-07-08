@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation("com.amazonaws:aws-lambda-java-core:1.2.0")
+    implementation("com.amazonaws:aws-lambda-java-core:1.2.1")
 }
 
 java {
