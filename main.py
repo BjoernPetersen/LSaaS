@@ -50,7 +50,10 @@ def post_request(event, context):
     for unique_ip in unique_ips:
         print(f'Registering: {unique_ip}')
         domain_name = cloudflare.register_domain(instance_id, unique_ip)
-        domain_names.append(domain_name)
+        domain_names.append({
+            'ip': unique_ip,
+            'domain': domain_name
+        })
 
     key_format = _get_format(event)
     token = secrets.token_hex(64)
