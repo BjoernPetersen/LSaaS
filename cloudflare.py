@@ -1,3 +1,4 @@
+import binascii
 import datetime
 import os
 from typing import List
@@ -22,7 +23,8 @@ def get_wildcard_domain(instance_id: str) -> str:
 
 
 def register_domain(instance_id: str, ip: str) -> str:
-    name = f'{ip}.{_get_domain_space(instance_id)}'
+    encoded_ip = binascii.b2a_hex(ip.encode('ascii')).decode('ascii')
+    name = f'{encoded_ip}.{_get_domain_space(instance_id)}'
     _client.zones.dns_records.post(_zone_id, data={
         'name': name,
         'type': 'A',
