@@ -29,14 +29,14 @@ You'll get a response containing your new subdomains and a token to retrieve you
 
 ```json
 {
-    "wildcardDomain": "*.some-random-subdomain.instance.kiu.party",
+    "wildcardDomain": "*.your-random-subdomain.instance.kiu.party",
     "domains": [
       {
-        "domain": "first.some-random-subdomain.instance.kiu.party",
+        "domain": "first.your-random-subdomain.instance.kiu.party",
         "ip": "192.168.178.42"
       },
       {
-        "domain": "second.some-random-subdomain.instance.kiu.party",
+        "domain": "second.your-random-subdomain.instance.kiu.party",
         "ip": "10.0.0.2"
       }
     ],
