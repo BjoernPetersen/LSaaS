@@ -4,7 +4,7 @@ import os
 import secrets
 from base64 import b64decode, b64encode
 from ipaddress import ip_address, IPv4Address
-from typing import Optional, List
+from typing import Optional, List, Set, Union, FrozenSet
 
 import boto3
 from sewer.client import Client as SewerClient
@@ -40,18 +40,30 @@ def _get_format(event):
 def post_request(event, context):
     instance_id = context.aws_request_id
     ips = event['ips']
-    unique_ips = set()
-    for ip in ips:
+    unique_ip_sets: Set[FrozenSet[str]] = set()
+
+    def _check_valid_ip(ip: str):
         if not _is_valid_ip(ip):
             raise ValueError(f'Invalid IP supplied: {ip}')
-        unique_ips.add(ip.strip())
 
-    domain_names = []
-    for unique_ip in unique_ips:
-        print(f'Registering: {unique_ip}')
-        domain_name = cloudflare.register_domain(instance_id, unique_ip)
-        domain_names.append({
-            'ip': unique_ip,
+    for ip_set in ips:
+        if isinstance(ip_set, list):
+            unique_ip_set = set()
+            for ip in ip_set:
+                _check_valid_ip(ip)
+                unique_ip_set.add(ip.strip())
+            unique_ip_sets.add(frozenset(unique_ip_set))
+        else:
+            ip: str = ip_set
+            _check_valid_ip(ip)
+            unique_ip_sets.add(frozenset([ip.strip()]))
+
+    domains = []
+    for unique_ip_set in unique_ip_sets:
+        print(f'Registering: {unique_ip_set}')
+        domain_name = cloudflare.register_domain(instance_id, unique_ip_set)
+        domains.append({
+            'ips': list(unique_ip_set),
             'domain': domain_name
         })
 
@@ -61,7 +73,7 @@ def post_request(event, context):
 
     result = {
         'wildcardDomain': wildcard_domain,
-        'domains': domain_names,
+        'domains': domains,
         'keyFormat': key_format,
         'token': token
     }

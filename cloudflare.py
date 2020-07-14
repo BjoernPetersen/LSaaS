@@ -1,7 +1,8 @@
 import binascii
 import datetime
+import hashlib
 import os
-from typing import List
+from typing import List, Set, Iterable
 
 from CloudFlare import CloudFlare
 
@@ -22,14 +23,23 @@ def get_wildcard_domain(instance_id: str) -> str:
     return f'*.{_get_domain_space(instance_id)}.{_zone_name}'
 
 
-def register_domain(instance_id: str, ip: str) -> str:
-    encoded_ip = binascii.b2a_hex(ip.encode('ascii')).decode('ascii')
+def _encode_ips(ips: Iterable[str]) -> str:
+    sha = hashlib.sha1()
+    for ip in ips:
+        sha.update(ip.encode('ascii'))
+    digest = sha.digest()
+    return binascii.b2a_hex(digest).decode('ascii')
+
+
+def register_domain(instance_id: str, ips: Iterable[str]) -> str:
+    encoded_ip = _encode_ips(ips)
     name = f'{encoded_ip}.{_get_domain_space(instance_id)}'
-    _client.zones.dns_records.post(_zone_id, data={
-        'name': name,
-        'type': 'A',
-        'content': ip
-    })
+    for ip in ips:
+        _client.zones.dns_records.post(_zone_id, data={
+            'name': name,
+            'type': 'A',
+            'content': ip
+        })
     return f'{name}.{_zone_name}'
 
 

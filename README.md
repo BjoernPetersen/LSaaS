@@ -8,7 +8,8 @@ and giving you the certificate signed by Let's Encrypt.
 
 ## Requesting an instance certificate
 
-Send a request containing up to 20 IP addresses and the desired key format to the service:
+Send a request containing up to 20 IP address groups with up to 5 ip addresses each and
+the desired key format to the service:
 
 ```
 POST https://instance.kiu.party
@@ -16,7 +17,8 @@ POST https://instance.kiu.party
 {
     "ips": [
         "192.168.178.42",
-        "10.0.0.2"
+        // These two will be associated with the same domain
+        ["192.168.0.142", "10.0.0.2"]
     ],
     // Can be "pem", "p12" or "jks". Defaults to "pem" if missing.
     "keyFormat": "pem"
@@ -33,11 +35,11 @@ You'll get a response containing your new subdomains and a token to retrieve you
     "domains": [
       {
         "domain": "first.your-random-subdomain.instance.kiu.party",
-        "ip": "192.168.178.42"
+        "ips": ["192.168.178.42"]
       },
       {
         "domain": "second.your-random-subdomain.instance.kiu.party",
-        "ip": "10.0.0.2"
+        "ip": ["192.168.0.142", "10.0.0.2"]
       }
     ],
     "token": "your-super-secret-token",

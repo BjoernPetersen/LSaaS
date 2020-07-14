@@ -17,9 +17,23 @@ resource "aws_api_gateway_model" "initial_request" {
       "minItems": 1,
       "maxItems": 20,
       "items": {
-          "type": "string",
-          "minLength": 7,
-          "maxLength": 15
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 7,
+            "maxLength": 15
+          },
+          {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 15
+            }
+          }
+        ]
       }
     },
     "keyFormat": {
@@ -52,19 +66,23 @@ resource "aws_api_gateway_model" "domain_response" {
   ],
   "properties": {
     "wildcardDomain": {
-        "type": "string"
+      "type": "string"
     },
     "domains": {
       "type": "array",
       "items": {
         "type": "object",
         "required": [
-            "domain",
-            "ip"
+          "domain",
+          "ips"
         ],
         "properties": {
-            "domain": { "type": "string" },
-            "ip": { "type": "string" }
+          "domain": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string"
+          }
         }
       }
     },
