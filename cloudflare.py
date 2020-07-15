@@ -2,7 +2,8 @@ import binascii
 import datetime
 import hashlib
 import os
-from typing import List, Set, Iterable
+from typing import List, Set, Iterable, Union
+from ipaddress import IPv6Address, IPv4Address
 
 from CloudFlare import CloudFlare
 
@@ -23,22 +24,22 @@ def get_wildcard_domain(instance_id: str) -> str:
     return f'*.{_get_domain_space(instance_id)}.{_zone_name}'
 
 
-def _encode_ips(ips: Iterable[str]) -> str:
+def _encode_ips(ips: Iterable[Union[IPv4Address, IPv6Address]]) -> str:
     sha = hashlib.sha1()
     for ip in ips:
-        sha.update(ip.encode('ascii'))
+        sha.update(ip.packed)
     digest = sha.digest()
     return binascii.b2a_hex(digest).decode('ascii')
 
 
-def register_domain(instance_id: str, ips: Iterable[str]) -> str:
+def register_domain(instance_id: str, ips: Iterable[Union[IPv4Address, IPv6Address]]) -> str:
     encoded_ip = _encode_ips(ips)
     name = f'{encoded_ip}.{_get_domain_space(instance_id)}'
     for ip in ips:
         _client.zones.dns_records.post(_zone_id, data={
             'name': name,
-            'type': 'A',
-            'content': ip
+            'type': 'A' if ip.version == 4 else 'AAAA',
+            'content': ip.exploded
         })
     return f'{name}.{_zone_name}'
 

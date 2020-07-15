@@ -20,8 +20,8 @@ resource "aws_api_gateway_model" "initial_request" {
         "oneOf": [
           {
             "type": "string",
-            "minLength": 7,
-            "maxLength": 15
+            "minLength": 2,
+            "maxLength": 39
           },
           {
             "type": "array",
@@ -29,8 +29,8 @@ resource "aws_api_gateway_model" "initial_request" {
             "maxItems": 5,
             "items": {
               "type": "string",
-              "minLength": 7,
-              "maxLength": 15
+              "minLength": 2,
+              "maxLength": 39
             }
           }
         ]

@@ -3,7 +3,7 @@ import json
 import os
 import secrets
 from base64 import b64decode, b64encode
-from ipaddress import ip_address, IPv4Address
+from ipaddress import ip_address, IPv4Address, IPv6Address
 from typing import Optional, List, Set, Union, FrozenSet
 
 import boto3
@@ -40,30 +40,28 @@ def _get_format(event):
 def post_request(event, context):
     instance_id = context.aws_request_id
     ips = event['ips']
-    unique_ip_sets: Set[FrozenSet[str]] = set()
-
-    def _check_valid_ip(ip: str):
-        if not _is_valid_ip(ip):
-            raise ValueError(f'Invalid IP supplied: {ip}')
+    unique_ip_sets: Set[FrozenSet[Union[IPv4Address, IPv6Address]]] = set()
 
     for ip_set in ips:
         if isinstance(ip_set, list):
             unique_ip_set = set()
             for ip in ip_set:
-                _check_valid_ip(ip)
-                unique_ip_set.add(ip.strip())
+                ip_add = _parse_ip(ip)
+                if not ip_add:
+                    raise ValueError(f'Invalid IP supplied: {ip}')
+                unique_ip_set.add(ip_add)
             unique_ip_sets.add(frozenset(unique_ip_set))
         else:
             ip: str = ip_set
-            _check_valid_ip(ip)
-            unique_ip_sets.add(frozenset([ip.strip()]))
+            ip_add = _parse_ip(ip)
+            unique_ip_sets.add(frozenset([ip_add]))
 
     domains = []
     for unique_ip_set in unique_ip_sets:
         print(f'Registering: {unique_ip_set}')
         domain_name = cloudflare.register_domain(instance_id, unique_ip_set)
         domains.append({
-            'ips': list(unique_ip_set),
+            'ips': list(map(lambda x: x.exploded, unique_ip_set)),
             'domain': domain_name
         })
 
@@ -224,12 +222,14 @@ def _decode_string(s: str) -> bytes:
     return b64decode(s.encode('ascii'))
 
 
-def _is_valid_ip(ip: str) -> bool:
+def _parse_ip(ip: str) -> Optional[Union[IPv4Address, IPv6Address]]:
     try:
-        address: IPv4Address = ip_address(ip)
+        address: Union[IPv4Address, IPv6Address] = ip_address(ip)
     except ValueError:
-        return False
-    return address.is_private and not address.is_reserved
+        return None
+    if not address.is_private or address.is_reserved:
+        return None
+    return address
 
 
 def _get_cert(domain_name: str):
