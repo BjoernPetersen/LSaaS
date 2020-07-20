@@ -5,8 +5,8 @@ resource "aws_lambda_function" "get_result" {
   handler       = "main.get_result"
   timeout       = 30
 
-  filename         = "../code.zip"
-  source_code_hash = filebase64sha256("../code.zip")
+  filename         = data.archive_file.code.output_path
+  source_code_hash = data.archive_file.code.output_base64sha256
 
   layers = [aws_lambda_layer_version.lsaas.arn]
 
