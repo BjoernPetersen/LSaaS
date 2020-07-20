@@ -17,8 +17,8 @@ resource "aws_lambda_function" "convert_p12" {
   handler       = "p12.convert_p12"
   timeout       = 30
 
-  filename         = data.archive_file.code.output_path
-  source_code_hash = data.archive_file.code.output_base64sha256
+  filename         = "../code.zip"
+  source_code_hash = filebase64sha256("../code.zip")
 
   layers = [aws_lambda_layer_version.lsaas.arn]
 }
