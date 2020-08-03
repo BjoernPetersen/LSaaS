@@ -34,11 +34,11 @@ different DNS registrar APIs.
 
 This project provides a public API that receives a list of your local IP addresses (e.g. `10.0.0.1`,
 `192.168.178.1`) and then performs all steps necessary to serve your local service at those IP
-addresses using a unique subdomain with a valid TLS certificate. To achieve that it performs the
-following steps:
+addresses using a unique subdomain with a valid TLS certificate (equivalent of option 2 above).
+To achieve that it performs the following steps:
 
 - Create a new subdomain as your namespace: `request-id.kiu.party`
-- Obtain a wildcard certificate `C` for that subdomain (`*.request-id.kiu.party`) from LetsEncrypt
+- Obtain a wildcard certificate for that subdomain (`*.request-id.kiu.party`) from LetsEncrypt
 - Create DNS `A` and/or `AAAA` records for your supplied IPs (`encoded-ip.request-id.kiu.party`)
 - Give you the certificate and the names of the created domains
 - Delete the certificate so you're the only one in possession of it
