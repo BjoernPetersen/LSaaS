@@ -17,7 +17,7 @@ POST https://instance.kiu.party
 {
     "ips": [
         "192.168.178.42",
-        // These two will be associated with the same domain
+        // These three will be associated with the same domain
         ["192.168.0.142", "10.0.0.2", "fde4:8dba:82e1::"]
     ],
     // Can be "pem", "p12" or "jks". Defaults to "pem" if missing.
