@@ -9,7 +9,7 @@ and giving you the certificate signed by Let's Encrypt.
 ## Motivation
 
 Imagine you want to distribute a network service that's deployed in the respective local network of 
-your users. Let's say the service is now available at the IP `192.168.1.1`. To properly encrypt
+your users. Let's say the service is now available at the IP `192.168.1.52`. To properly encrypt
 connections to that service, you'll want to use HTTPS. The problem is: HTTPS relies on your server
 serving a trusted certificate. To achieve that, you have two options:
 
@@ -32,8 +32,8 @@ different DNS registrar APIs.
 
 ## How LSaaS works
 
-This project provides a public API that receives a list of your local IP addresses (e.g. `10.0.0.1`,
-`192.168.178.1`) and then performs all steps necessary to serve your local service at those IP
+This project provides a public API that receives a list of your local IP addresses (e.g. `10.0.0.42`,
+`192.168.178.14`) and then performs all steps necessary to serve your local service at those IP
 addresses using a unique subdomain with a valid TLS certificate (equivalent of option 2 above).
 To achieve that it performs the following steps:
 
