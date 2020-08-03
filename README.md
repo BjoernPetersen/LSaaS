@@ -44,7 +44,7 @@ To achieve that it performs the following steps:
 - Delete the certificate so you're the only one in possession of it
 
 Using this service of course requires you to trust this service not to create more certificates
-for "your" domain and not to delete the DNS records before expiration. That's because the created
+for "your" subdomain/namespace and not to delete the DNS records before expiration. That's because the created
 subdomains are technically still under full control of the domain owner, who's also the service
 provider.
 
