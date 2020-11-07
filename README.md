@@ -89,7 +89,7 @@ You'll get a response containing your new subdomains and a token to retrieve you
       },
       {
         "domain": "second.your-random-subdomain.instance.kiu.party",
-        "ip": ["192.168.0.142", "10.0.0.2", "fde4:8dba:82e1:0000:0000:0000:0000:0000"]
+        "ips": ["192.168.0.142", "10.0.0.2", "fde4:8dba:82e1:0000:0000:0000:0000:0000"]
       }
     ],
     "token": "your-super-secret-token",
