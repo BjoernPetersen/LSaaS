@@ -2,36 +2,47 @@ package net.bjoernpetersen.lsass.jks;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class Main implements RequestHandler<Map<String, String>, Map<String, String>> {
+public final class Main implements RequestHandler<Map<String, String>, Map<String, String>> {
+    private static final String TMP_DIR = "/tmp";
+    private static final String EXTENSION_PKCS = ".p12";
+    private static final String EXTENSION_JKS = ".jks";
+
     @Override
-    public Map<String, String> handleRequest(Map<String, String> input, Context context) {
-        var p12 = input.get("p12");
-        var password = input.get("pass");
-        var decoded = Base64.getDecoder().decode(p12.getBytes(StandardCharsets.US_ASCII));
-        var requestId = context.getAwsRequestId();
-        var p12Path = Paths.get("/tmp", requestId + ".p12");
+    public Map<String, String> handleRequest(Map<String, String> rawInput, Context context) {
+        var input = new Input(rawInput);
+        var storage = new Storage(context);
+
+        var p12Path = storage.getP12Path();
+        writeToFile(p12Path, input.decodeP12());
+
+        var jksPath = storage.getJksPath();
+        convertKey(p12Path, jksPath, input.getPassword());
+
+        var resultData = readFileBytes(jksPath);
+        return encodeResult(resultData);
+    }
+
+    private void writeToFile(Path path, byte[] data) {
         try {
-            Files.write(p12Path, decoded);
+            Files.write(path, data);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
 
-        var jksPath = Paths.get("/tmp", requestId + ".jks");
-        convertKey(p12Path, jksPath, password);
-
+    private byte[] readFileBytes(Path path) {
         try {
-            var jksBytes = Files.readAllBytes(jksPath);
-            return encodeResult(jksBytes);
+            return Files.readAllBytes(path);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -44,16 +55,17 @@ public class Main implements RequestHandler<Map<String, String>, Map<String, Str
     }
 
     private void convertKey(Path p12Path, Path jksPath, String pass) {
+        // The whole reason we're using Java is that we can assume the keytool is available in the Java Lambda Runtime
         try {
             new ProcessBuilder(
-                "keytool",
-                "-importkeystore",
-                "-noprompt",
-                "-srckeystore", p12Path.toString(),
-                "-srcstorepass", pass,
-                "-srcstoretype", "pkcs12",
-                "-destkeystore", jksPath.toString(),
-                "-deststorepass", pass
+                    "keytool",
+                    "-importkeystore",
+                    "-noprompt",
+                    "-srckeystore", p12Path.toString(),
+                    "-srcstorepass", pass,
+                    "-srcstoretype", "pkcs12",
+                    "-destkeystore", jksPath.toString(),
+                    "-deststorepass", pass
             ).inheritIO().start().waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
