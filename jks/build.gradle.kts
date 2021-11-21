@@ -14,5 +14,5 @@ java {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
