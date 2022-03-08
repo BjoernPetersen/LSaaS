@@ -1,16 +1,29 @@
 resource "aws_s3_bucket" "bucket" {
   bucket = var.s3_bucket_name
-  acl    = "private"
+}
 
-  lifecycle_rule {
+resource "aws_s3_bucket_acl" "bucket" {
+  bucket = aws_s3_bucket.bucket.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
     id                                     = "DeleteOldObjects"
-    enabled                                = true
-    abort_incomplete_multipart_upload_days = 7
+    status                                 = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+
     expiration {
       days = 1
     }
+
     noncurrent_version_expiration {
-      days = 1
+      noncurrent_days = 1
     }
   }
 }
