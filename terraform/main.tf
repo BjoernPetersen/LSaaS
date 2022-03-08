@@ -138,6 +138,7 @@ resource "aws_iam_role_policy" "lambda_role_invoke_policy" {
 
 resource "aws_lambda_layer_version" "lsaas" {
   filename   = "../layer.zip"
+  source_code_hash = filebase64sha256("../layer.zip")
   layer_name = var.lambda_layer_name
 
   compatible_runtimes = ["python3.9"]
