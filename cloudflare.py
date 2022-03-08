@@ -53,6 +53,7 @@ def _is_outdated(record: dict) -> bool:
     if not name.endswith(f'.{infix}.{_zone_name}'):
         return False
     iso_creation_time = record['created_on']
+    # TODO: fix this hack
     if iso_creation_time.endswith('Z'):
         iso_creation_time = iso_creation_time[:-1]
     try:
