@@ -1,10 +1,11 @@
 import binascii
-import datetime
 import hashlib
 import os
-from typing import List, Iterable, Union
+from datetime import timedelta
 from ipaddress import IPv6Address, IPv4Address
+from typing import List, Iterable, Union
 
+import pendulum
 from CloudFlare import CloudFlare
 
 _zone_id = os.getenv("CLOUDFLARE_ZONE_ID")
@@ -53,15 +54,9 @@ def _is_outdated(record: dict) -> bool:
     if not name.endswith(f'.{infix}.{_zone_name}'):
         return False
     iso_creation_time = record['created_on']
-    # TODO: fix this hack
-    if iso_creation_time.endswith('Z'):
-        iso_creation_time = iso_creation_time[:-1]
-    try:
-        created_on = datetime.datetime.fromisoformat(iso_creation_time)
-    except ValueError:
-        created_on = datetime.datetime.fromisoformat(f"{iso_creation_time}0")
-    expiration = created_on + datetime.timedelta(days=90)
-    now = datetime.datetime.now()
+    created_on = pendulum.parse(iso_creation_time)
+    expiration = created_on + timedelta(days=90)
+    now = pendulum.now()
     return now >= expiration
 
 
