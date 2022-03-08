@@ -6,8 +6,8 @@ resource "aws_lambda_function" "convert_jks" {
   timeout       = 15
   memory_size   = 256
 
-  filename         = "../jks/build/libs/jks.jar"
-  source_code_hash = filebase64sha256("../jks/build/libs/jks.jar")
+  filename         = "../jks/build/distributions/jks.zip"
+  source_code_hash = filebase64sha256("../jks/build/distributions/jks.zip")
 
   environment {
     variables = {

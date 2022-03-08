@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation("com.amazonaws:aws-lambda-java-core:1.2.1")
+    implementation("io.sentry:sentry:5.6.2")
 }
 
 java {
@@ -15,4 +16,13 @@ java {
 
 repositories {
     mavenCentral()
+}
+
+tasks {
+    create("awsZip", Zip::class) {
+        from(compileJava, processResources)
+        into("lib") {
+            from(configurations.runtimeClasspath)
+        }
+    }
 }

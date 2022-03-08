@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: ./gradlew build
+      - run: ./gradlew awsZip
         working-directory: jks
 
       - run: zip code.zip *.py
