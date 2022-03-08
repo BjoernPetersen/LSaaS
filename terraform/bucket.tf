@@ -11,8 +11,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
   bucket = aws_s3_bucket.bucket.id
 
   rule {
-    id                                     = "DeleteOldObjects"
-    status                                 = "Enabled"
+    id     = "DeleteOldObjects"
+    status = "Enabled"
 
     abort_incomplete_multipart_upload {
       days_after_initiation = 7

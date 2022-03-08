@@ -17,6 +17,7 @@ resource "aws_lambda_function" "post" {
       CLOUDFLARE_ZONE_NAME = var.cloudflare_zone_name
       CLOUDFLARE_INFIX     = var.cloudflare_infix
       LAMBDA_NAME_RETRIEVE = aws_lambda_function.retrieve_cert.function_name
+      SENTRY_DSN           = var.sentry_dsn
     }
   }
 }

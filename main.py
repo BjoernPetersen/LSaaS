@@ -4,9 +4,10 @@ import os
 import secrets
 from base64 import b64decode, b64encode
 from ipaddress import ip_address, IPv4Address, IPv6Address
-from typing import Optional, List, Set, Union, FrozenSet
+from typing import Optional, Set, Union, FrozenSet
 
 import boto3
+import sentry_sdk
 from sewer.client import Client as SewerClient
 from sewer.dns_providers import CloudFlareDns
 
@@ -20,7 +21,15 @@ _lambda_name_convert_jks = os.getenv("LAMBDA_NAME_CONVERT_JKS")
 _bucket_name = os.getenv("S3_BUCKET_NAME")
 
 
+def _setup_sentry():
+    dsn = os.getenv("SENTRY_DSN")
+    sentry_sdk.init(
+        dsn=dsn,
+    )
+
+
 def cleanup(event, context):
+    _setup_sentry()
     outdated_ids = cloudflare.get_outdated_entries()
     for outdated_id in outdated_ids:
         cloudflare.unregister_domain(outdated_id)
@@ -38,6 +47,7 @@ def _get_format(event):
 
 
 def post_request(event, context):
+    _setup_sentry()
     instance_id = context.aws_request_id
     ips = event['ips']
     unique_ip_sets: Set[FrozenSet[Union[IPv4Address, IPv6Address]]] = set()
@@ -91,6 +101,7 @@ def _invoke_lambda(name, payload, sync=False):
 
 
 def process_request(event, context):
+    _setup_sentry()
     wildcard_domain = event['wildcardDomain']
     token = event['token']
     key_format = event['keyFormat']
@@ -180,6 +191,7 @@ def _get_file_name(object_key: str) -> str:
 
 
 def get_result(event, context):
+    _setup_sentry()
     token = event['token']
 
     object_keys = _list_objects(token)

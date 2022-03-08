@@ -1,6 +1,6 @@
 terraform {
   backend "remote" {
-    hostname = "app.terraform.io"
+    hostname     = "app.terraform.io"
     organization = "BjoernPetersen"
 
     workspaces {
@@ -20,12 +20,12 @@ terraform {
     }
 
     archive = {
-      source="hashicorp/archive"
+      source  = "hashicorp/archive"
       version = ">= 2.0.0, < 3.0.0"
     }
 
     null = {
-      source="hashicorp/null"
+      source = "hashicorp/null"
     }
   }
 }
@@ -113,13 +113,14 @@ resource "aws_lambda_function" "retrieve_cert" {
       LAMBDA_NAME_CONVERT_P12 = aws_lambda_function.convert_p12.function_name
       LAMBDA_NAME_CONVERT_JKS = aws_lambda_function.convert_jks.function_name
       S3_BUCKET_NAME          = aws_s3_bucket.bucket.id
+      SENTRY_DSN              = var.sentry_dsn
     }
   }
 }
 
 data "aws_iam_policy_document" "lambda_role_invoke_policy" {
   statement {
-    actions   = ["lambda:InvokeFunction", "lambda:InvokeAsync"]
+    actions = ["lambda:InvokeFunction", "lambda:InvokeAsync"]
     resources = [
       aws_lambda_function.convert_jks.arn,
       aws_lambda_function.convert_p12.arn,

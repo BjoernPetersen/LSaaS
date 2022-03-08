@@ -8,6 +8,12 @@ resource "aws_lambda_function" "convert_jks" {
 
   filename         = "../jks/build/libs/jks.jar"
   source_code_hash = filebase64sha256("../jks/build/libs/jks.jar")
+
+  environment {
+    variables = {
+      SENTRY_DSN = var.sentry_dsn
+    }
+  }
 }
 
 resource "aws_lambda_function" "convert_p12" {
@@ -21,4 +27,10 @@ resource "aws_lambda_function" "convert_p12" {
   source_code_hash = filebase64sha256("../code.zip")
 
   layers = [aws_lambda_layer_version.lsaas.arn]
+
+  environment {
+    variables = {
+      SENTRY_DSN = var.sentry_dsn
+    }
+  }
 }

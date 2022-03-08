@@ -13,6 +13,7 @@ resource "aws_lambda_function" "get_result" {
   environment {
     variables = {
       S3_BUCKET_NAME = aws_s3_bucket.bucket.id
+      SENTRY_DSN     = var.sentry_dsn
     }
   }
 }

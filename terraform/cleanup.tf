@@ -16,6 +16,7 @@ resource "aws_lambda_function" "cleanup" {
       CLOUDFLARE_ZONE_ID   = var.cloudflare_zone_id
       CLOUDFLARE_INFIX     = var.cloudflare_infix
       CLOUDFLARE_ZONE_NAME = var.cloudflare_zone_name
+      SENTRY_DSN           = var.sentry_dsn
     }
   }
 }
