@@ -6,6 +6,16 @@ terraform {
       name = "lsass"
     }
   }
+
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+    }
+
+    cloudflare = {
+      source = "terraform-providers/cloudflare"
+    }
+  }
 }
 
 provider "cloudflare" {
@@ -13,7 +23,7 @@ provider "cloudflare" {
 }
 
 provider "aws" {
-  profile = "default"
+  profile = var.aws_profile
   region  = var.aws_region
 }
 
@@ -94,7 +104,7 @@ resource "aws_lambda_function" "retrieve_cert" {
 
 data "aws_iam_policy_document" "lambda_role_invoke_policy" {
   statement {
-    actions = ["lambda:InvokeFunction", "lambda:InvokeAsync"]
+    actions   = ["lambda:InvokeFunction", "lambda:InvokeAsync"]
     resources = [
       aws_lambda_function.convert_jks.arn,
       aws_lambda_function.convert_p12.arn,
