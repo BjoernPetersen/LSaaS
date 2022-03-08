@@ -10,4 +10,5 @@ variable "aws_region" {
 
 variable "cloudflare_token_tf" {
   type = string
+  sensitive = true
 }

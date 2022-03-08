@@ -10,6 +10,7 @@ variable "cloudflare_zone_name" {
 
 variable "cloudflare_token_lambda" {
   type = string
+  sensitive = true
 }
 
 variable "cloudflare_infix" {

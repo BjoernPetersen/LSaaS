@@ -1,0 +1,37 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: ./gradlew build
+        working-directory: jks
+
+      - run: zip code.zip *.py
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - run: pip install -r requirements.txt -t python
+      - run: zip -r layer.zip python
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - run: terraform init
+        working-directory: terraform
+
+      - run: terraform apply -auto-approve
+        working-directory: terraform
+        env:
+          TF_VAR_cloudflare_token_lambda: ${{ secrets.CLOUDFLARE_TOKEN_LAMBDA }}
+          TF_VAR_cloudflare_token_tf: ${{ secrets.CLOUDFLARE_TOKEN_TF }}
+          TF_VAR_le_account_key: ${{ secrets.LE_ACCOUNT_KEY }}
