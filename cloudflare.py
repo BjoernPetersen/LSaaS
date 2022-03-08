@@ -52,7 +52,9 @@ def _is_outdated(record: dict) -> bool:
     name: str = record['name']
     if not name.endswith(f'.{infix}.{_zone_name}'):
         return False
-    iso_creation_time = record['created_on'][:-1]
+    iso_creation_time = record['created_on']
+    if iso_creation_time.endswith('Z'):
+        iso_creation_time = iso_creation_time[:-1]
     created_on = datetime.datetime.fromisoformat(iso_creation_time)
     expiration = created_on + datetime.timedelta(days=90)
     now = datetime.datetime.now()
