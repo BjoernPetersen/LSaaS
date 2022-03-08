@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "get_result" {
   function_name = "${var.function_name_prefix}-getResult"
   role          = aws_iam_role.lambda_role.arn
-  runtime       = "python3.8"
+  runtime       = "python3.9"
   handler       = "main.get_result"
   timeout       = 30
 

@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "post" {
   function_name = "${var.function_name_prefix}-post"
   role          = aws_iam_role.lambda_role.arn
-  runtime       = "python3.8"
+  runtime       = "python3.9"
   handler       = "main.post_request"
   timeout       = 30
 

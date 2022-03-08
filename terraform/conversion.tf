@@ -13,7 +13,7 @@ resource "aws_lambda_function" "convert_jks" {
 resource "aws_lambda_function" "convert_p12" {
   function_name = "${var.function_name_prefix}-convertP12"
   role          = aws_iam_role.lambda_role.arn
-  runtime       = "python3.8"
+  runtime       = "python3.9"
   handler       = "p12.convert_p12"
   timeout       = 30
 

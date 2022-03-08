@@ -2,7 +2,7 @@ import binascii
 import datetime
 import hashlib
 import os
-from typing import List, Set, Iterable, Union
+from typing import List, Iterable, Union
 from ipaddress import IPv6Address, IPv4Address
 
 from CloudFlare import CloudFlare

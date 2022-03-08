@@ -17,7 +17,7 @@ jobs:
       - run: zip code.zip *.py
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - run: pip install -r requirements.txt -t python
       - run: zip -r layer.zip python
 

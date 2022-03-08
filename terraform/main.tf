@@ -97,7 +97,7 @@ resource "aws_iam_role_policy" "lambda_role_s3_policy" {
 resource "aws_lambda_function" "retrieve_cert" {
   function_name = "${var.function_name_prefix}-retrieveCert"
   role          = aws_iam_role.lambda_role.arn
-  runtime       = "python3.8"
+  runtime       = "python3.9"
   handler       = "main.process_request"
   timeout       = 300
 
@@ -139,5 +139,5 @@ resource "aws_lambda_layer_version" "lsaas" {
   filename   = "../layer.zip"
   layer_name = var.lambda_layer_name
 
-  compatible_runtimes = ["python3.8"]
+  compatible_runtimes = ["python3.9"]
 }
