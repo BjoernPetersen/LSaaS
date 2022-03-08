@@ -11,11 +11,15 @@ resource "aws_acm_certificate" "cert" {
   validation_method = "DNS"
 }
 
+locals {
+  domain_validation_option = one(aws_acm_certificate.cert.domain_validation_options)
+}
+
 resource "cloudflare_record" "cert_validation_record" {
   zone_id = var.cloudflare_zone_id
-  name    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
-  type    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
-  value   = aws_acm_certificate.cert.domain_validation_options.0.resource_record_value
+  name    = local.domain_validation_option.resource_record_name
+  type    = local.domain_validation_option.resource_record_type
+  value   = local.domain_validation_option.resource_record_value
 
   lifecycle {
     ignore_changes = [value]
