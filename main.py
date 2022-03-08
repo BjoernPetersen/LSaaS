@@ -9,7 +9,7 @@ from typing import Optional, Set, Union, FrozenSet
 import boto3
 import sentry_sdk
 from sewer.client import Client as SewerClient
-from sewer.dns_providers import CloudFlareDns
+from sewer.dns_providers.cloudflare import CloudFlareDns
 
 import cloudflare
 
