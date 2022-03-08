@@ -1,4 +1,4 @@
 cloudflare==2.8.15
 pendulum==2.1.2
 sentry-sdk==1.5.7
-sewer[cloudflare]==0.8.3
+sewer[cloudflare]==0.8.4
