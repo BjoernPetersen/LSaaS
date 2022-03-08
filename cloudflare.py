@@ -55,7 +55,10 @@ def _is_outdated(record: dict) -> bool:
     iso_creation_time = record['created_on']
     if iso_creation_time.endswith('Z'):
         iso_creation_time = iso_creation_time[:-1]
-    created_on = datetime.datetime.fromisoformat(iso_creation_time)
+    try:
+        created_on = datetime.datetime.fromisoformat(iso_creation_time)
+    except ValueError:
+        created_on = datetime.datetime.fromisoformat(f"{iso_creation_time}0")
     expiration = created_on + datetime.timedelta(days=90)
     now = datetime.datetime.now()
     return now >= expiration

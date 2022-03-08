@@ -9,11 +9,22 @@ terraform {
 
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
+      version = ">= 2.0.0, <3.0.0"
     }
 
     cloudflare = {
-      source = "terraform-providers/cloudflare"
+      source  = "cloudflare/cloudflare"
+      version = ">= 3.0.0, <4.0.0"
+    }
+
+    archive = {
+      source="hashicorp/archive"
+      version = ">= 2.0.0, <3.0.0"
+    }
+
+    null = {
+      source="hashicorp/null"
     }
   }
 }
@@ -26,6 +37,9 @@ provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
 }
+
+provider "archive" {}
+provider "null" {}
 
 data "aws_iam_policy_document" "assume_lambda_role_policy" {
   statement {
