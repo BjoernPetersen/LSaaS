@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation("com.amazonaws:aws-lambda-java-core:1.2.1")
-    implementation("io.sentry:sentry:5.7.0")
+    implementation("io.sentry:sentry:5.7.1")
 }
 
 java {
