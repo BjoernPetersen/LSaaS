@@ -53,6 +53,11 @@ def _is_outdated(record: dict) -> bool:
     name: str = record['name']
     if not name.endswith(f'.{infix}.{_zone_name}'):
         return False
+
+    if name.startswith("_"):
+        # This is an AWS certificate domain
+        return False
+
     iso_creation_time = record['created_on']
     created_on = pendulum.parse(iso_creation_time)
     expiration = created_on + timedelta(days=90)
