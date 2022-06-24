@@ -23,19 +23,19 @@ provider "registry.terraform.io/cloudflare/cloudflare" {
 }
 
 provider "registry.terraform.io/hashicorp/aws" {
-  version     = "4.18.0"
+  version     = "4.20.0"
   constraints = ">= 4.0.0, < 5.0.0"
   hashes = [
-    "h1:0TxxwnxWgp9gWye9Fbstq9+rpAqx3slcPCGpguZHPag=",
-    "h1:1Z7dWRqkNAHOfYywJ8sGb9gMYro6HqGxw6DgCvBrckg=",
-    "h1:2W4xAihPlycb2XISriYIk8xCLfmmwt6jgyE31oc7BWI=",
-    "h1:62MWy6fGx/cVk1DnLcc8rUxCCKhi6/R9fi/Af/ph9ag=",
-    "h1:6gkWNVTtIlpniC188RP43f9PrcXG9v5CqQS2xw1dVgM=",
-    "h1:NS7f5sPSy5udIrMS+uuIDW06IaRRtpoisbUuDW8Kowg=",
-    "h1:QrSUlj21X6bKsxQDpO+LRlWAi9A5eoUVgEQjCQHkyTc=",
-    "h1:UkrJd0MCL6C6o5nMW5KmD3SUMcYGvGWB9EmkNjYPI60=",
-    "h1:cKzY6/PuhCwk/Hl4/rtCM5hncH3HnZGldKM5yleGCJo=",
-    "h1:vGLgLpdxJj1l/H+XDMmBwB0i8wk0de3PTrx0DWyE92Y=",
-    "h1:xuZc/7PIWdRVaaH1DhWjZmaq69LAQ/kLs3hPeSGEpsA=",
+    "h1:5hrjN0Wyf2dcXPq90/EPkzOYvBEWGiEkqpKVqxxw6j0=",
+    "h1:AfHDlPKGuuI69RRzkLOvFK4aZrypGx6NQ8VCEBbFluc=",
+    "h1:KzwFqCBgSx7oSxIMem+41kwcwvrBZeQQLpeFWrlah3Y=",
+    "h1:M1QwyWduVaKI5r8uCtD/TxYw3XPqg0C23dKjTN4HpJQ=",
+    "h1:N2E0IAMW66bzn5SyLPtUWn9jWCdjGljzWP2YCINJ0sc=",
+    "h1:NXdDdRzdG5s1m7Rl+hkY01CNiICtEOD5K81qKtSTLWA=",
+    "h1:OEigBq331Y3UlAMISFLw4Jo3HP1++ieySVeQTQ6av4Y=",
+    "h1:fS9OT2+EjwONHjEaj6WGA222YXyib+Uxq213dfr20S8=",
+    "h1:t1xJSOYq3i2F1DpZXtJz8BEAcypdk/1YDET4+WqX81o=",
+    "h1:u9+1kj9cr9x90X2v30ZTASAkp7H/zAeTyNIhLG+qldw=",
+    "h1:zSLTJ7B/Kx9PC/XGBXfQwm4CQZDi0M+NXASMnvW9/lg=",
   ]
 }
