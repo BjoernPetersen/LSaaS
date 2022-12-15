@@ -1,4 +1,4 @@
 cloudflare==2.11.1
 pendulum==2.1.2
-sentry-sdk==1.11.1
+sentry-sdk==1.12.0
 sewer[cloudflare]==0.8.3
