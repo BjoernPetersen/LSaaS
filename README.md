@@ -1,5 +1,7 @@
 # Local network security as a service (LSaaS)
 
+**Note:** this service is currently offline, and it will stay offline for the foreseeable future.
+
 This free service allows you to obtain a publicly trusted TLS certificate for your
 local network service (e.g. a [MusicBot](https://github.com/BjoernPetersen/MusicBot) instance).
 
